@@ -1,0 +1,16 @@
+[build]
+builder = "NIXPACKS"
+
+[[services]]
+name = "api"
+sourceDir = "."
+
+[services.variables]
+PORT = "8000"
+PYTHON_VERSION = "3.11"
+
+[services.build]
+buildCommand = "pip install fastapi uvicorn"
+
+[services.start]
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"

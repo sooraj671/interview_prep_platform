@@ -420,4 +420,3 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-# Force redeploy Fri Jan  2 01:15:32 PKT 2026
