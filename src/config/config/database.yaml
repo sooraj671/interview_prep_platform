@@ -1,0 +1,22 @@
+# Database Configuration
+database:
+  url: "postgresql://postgres:password@localhost:5432/interview_prep"
+  pool_size: 10
+  max_overflow: 20
+  pool_timeout: 30
+  pool_recycle: 3600
+  echo: false
+
+  # Migration settings
+  migrations:
+    directory: "alembic"
+    autogenerate: true
+
+  # Performance settings
+  query_timeout: 30
+  connection_timeout: 10
+
+  # Indexing strategy
+  indexing:
+    auto_create_indexes: true
+    analyze_threshold: 1000

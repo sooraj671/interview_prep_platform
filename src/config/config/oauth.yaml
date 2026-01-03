@@ -1,0 +1,41 @@
+# OAuth Configuration
+oauth:
+  redirect_uri: "http://localhost:3000/auth/callback"
+  scope:
+    - "openid"
+    - "profile"
+    - "email"
+
+  # Google OAuth
+  google_client_id: null
+  google_client_secret: null
+  google_auth_url: "https://accounts.google.com/o/oauth2/v2/auth"
+  google_token_url: "https://oauth2.googleapis.com/token"
+  google_user_info_url: "https://www.googleapis.com/oauth2/v2/userinfo"
+
+  # Microsoft OAuth
+  microsoft_client_id: null
+  microsoft_client_secret: null
+  microsoft_auth_url: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+  microsoft_token_url: "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+  microsoft_user_info_url: "https://graph.microsoft.com/v1.0/me"
+
+  # GitHub OAuth
+  github_client_id: null
+  github_client_secret: null
+  github_auth_url: "https://github.com/login/oauth/authorize"
+  github_token_url: "https://github.com/login/oauth/access_token"
+  github_user_info_url: "https://api.github.com/user"
+  github_scope: "user:email"
+
+  # LinkedIn OAuth
+  linkedin_client_id: null
+  linkedin_client_secret: null
+  linkedin_auth_url: "https://www.linkedin.com/oauth/v2/authorization"
+  linkedin_token_url: "https://www.linkedin.com/oauth/v2/accessToken"
+  linkedin_user_info_url: "https://api.linkedin.com/v2/people/~:(id,firstName,lastName,emailAddress,profilePicture(displayImage~:playableStreams))"
+
+  # OAuth settings
+  token_expiry: 3600
+  refresh_token_expiry: 2592000
+  state_expiry: 600

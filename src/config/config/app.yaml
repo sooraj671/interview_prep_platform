@@ -1,0 +1,33 @@
+# Application Configuration
+name: "Interview Prep Platform"
+version: "1.0.0"
+base_url: "http://localhost:8000"
+api_prefix: "/api/v1"
+docs_url: "/docs"
+redoc_url: "/redoc"
+
+# CORS Configuration
+allowed_origins:
+  - "http://localhost:3000"
+  - "http://localhost:8000"
+allowed_methods:
+  - "GET"
+  - "POST"
+  - "PUT"
+  - "DELETE"
+  - "OPTIONS"
+allowed_headers:
+  - "*"
+
+# Feature Flags
+feature_flags:
+  enable_oauth_login: true
+  enable_resume_upload: true
+  enable_ai_roadmaps: true
+  enable_assessments: true
+  enable_simulation_mode: true
+  enable_leaderboards: true
+  enable_interviewer_profiles: true
+  enable_analytics: true
+  enable_advanced_ai: false
+  enable_real_time_collaboration: false

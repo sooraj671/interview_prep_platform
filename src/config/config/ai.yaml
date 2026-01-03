@@ -1,0 +1,81 @@
+# AI/LLM Configuration
+ai:
+  ollama_base_url: "http://localhost:11434"
+  embedding_model: "all-MiniLM-L6-v2"
+  llm_model: "llama3.1"
+  vector_dimension: 384
+  request_timeout: 300
+  max_retries: 3
+
+  # Feature flags
+  enable_ai_generation: true
+  enable_embeddings: true
+  enable_resume_parsing: true
+
+  # Rate limiting for AI endpoints
+  rate_limits:
+    requests_per_hour: 50
+    concurrent_requests: 5
+    max_tokens_per_request: 4000
+
+  # AI/LLM Configuration
+  ollama:
+    base_url: "http://localhost:11434" # Your local Ollama URL
+    models:
+      default: "llama2"
+      roadmap: "llama2"
+      assessment: "llama2"
+      simulation: "llama2"
+      feedback: "llama2"
+    timeout: 30
+    max_retries: 3
+    retry_delay: 1
+
+  groq:
+    api_key: "${GROQ_API_KEY}"
+    models:
+      default: "llama-3.1-8b-instant"
+      roadmap: "llama-3.1-8b-instant"
+      assessment: "llama-3.1-8b-instant"
+      simulation: "llama-3.1-8b-instant"
+    timeout: 30
+    max_retries: 3
+
+  prompts:
+    temperature: 0.7
+    max_tokens: 2000
+    structured_output: true
+
+  # Model configurations
+  models:
+    roadmap_generation:
+      model: "llama3.1"
+      temperature: 0.7
+      max_tokens: 2000
+
+    assessment_generation:
+      model: "llama3.1"
+      temperature: 0.3
+      max_tokens: 1000
+
+    resume_parsing:
+      model: "llama3.1"
+      temperature: 0.1
+      max_tokens: 1500
+
+    simulation_mode:
+      model: "llama3.1"
+      temperature: 0.8
+      max_tokens: 500
+
+    study_mode:
+      model: "llama3.1"
+      temperature: 0.6
+      max_tokens: 1000
+
+  # Embedding settings
+  embeddings:
+    model: "all-MiniLM-L6-v2"
+    dimension: 384
+    batch_size: 32
+    similarity_threshold: 0.7

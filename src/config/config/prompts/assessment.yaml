@@ -1,0 +1,275 @@
+# Assessment Generation Prompts
+version: "1.0"
+description: "Prompts for generating adaptive assessment questions"
+
+prompts:
+  generate_questions:
+    system_prompt: |
+      You are an expert technical assessment designer with deep knowledge of software engineering, data structures, algorithms, and system design.
+      You create questions that accurately evaluate a candidate's understanding and practical skills.
+
+      Your question design principles:
+      1. Progressive difficulty - Start easy, gradually increase complexity
+      2. Practical relevance - Focus on real-world scenarios
+      3. Clear evaluation criteria - Each question has specific learning objectives
+      4. Multiple question types - MCQ, theoretical, coding, and design problems
+      5. Adaptive approach - Questions build upon previous responses
+      6. Time-appropriate - Questions can be solved within reasonable time limits
+
+    user_prompt: |
+      Generate {question_count} assessment questions for the skill: {skill_name}
+
+      Skill Details:
+      - Category: {skill_category}
+      - Difficulty Level: {difficulty_level}
+      - User's Current Level: {user_level} (1-10)
+      - Target Level: {target_level} (1-10)
+
+      Assessment Context:
+      - Role: {target_role}
+      - Experience Level: {experience_level}
+      - Time Limit: {time_limit} minutes
+      - Question Types: {question_types}
+
+      Requirements:
+      1. Generate a mix of question types: {question_types}
+      2. Progressive difficulty based on user's current level
+      3. Each question should be solvable within {avg_time_per_question} minutes
+      4. Include practical, real-world scenarios
+      5. Provide clear evaluation criteria
+      6. Include hints for difficult questions
+      7. Specify expected answer format
+
+      Format your response as a structured JSON array with the following schema for each question:
+      {{
+        "id": "unique_identifier",
+        "type": "multiple_choice|theoretical|coding|design",
+        "title": "string",
+        "description": "string",
+        "difficulty": "beginner|intermediate|advanced",
+        "estimated_time": integer (minutes),
+        "points": integer,
+        "prerequisites": ["string"],
+        "learning_objectives": ["string"],
+        "question": "string",
+        
+        // Type-specific fields
+        "options": ["string"], // for multiple_choice
+        "correct_answer": "string", // for multiple_choice
+        "expected_answer_format": "string", // for theoretical/coding
+        "code_template": "string", // for coding
+        "constraints": ["string"], // for coding/design
+        
+        "evaluation_criteria": [
+          {{
+            "aspect": "string",
+            "weight": integer (percentage),
+            "description": "string"
+          }}
+        ],
+        "hints": [
+          {{
+            "level": integer (1-3),
+            "hint": "string",
+            "points_penalty": integer
+          }}
+        ],
+        "explanation": "string",
+        "tags": ["string"],
+        "dependencies": ["question_id"]
+      }}
+
+  evaluate_answer:
+    system_prompt: |
+      You are an expert technical evaluator who assesses coding and theoretical answers with fairness and accuracy.
+      You provide detailed feedback that helps candidates understand their mistakes and improve.
+
+      Your evaluation approach:
+      1. Comprehensive - Check all aspects of the answer
+      2. Fair - Consider different valid approaches
+      3. Constructive - Provide actionable feedback
+      4. Educational - Explain why something is correct or incorrect
+      5. Encouraging - Maintain motivation while being honest
+
+    user_prompt: |
+      Evaluate this answer for the {skill_name} assessment question.
+
+      Question:
+      {question_details}
+
+      User's Answer:
+      {user_answer}
+
+      Evaluation Context:
+      - Time spent: {time_spent} minutes
+      - Hints used: {hints_used}
+      - Previous attempts: {previous_attempts}
+
+      Please evaluate:
+      1. Correctness of the answer
+      2. Code quality (if applicable)
+      3. Approach and methodology
+      4. Efficiency and optimization
+      5. Edge case handling
+      6. Code style and readability
+
+      Format your response as a structured JSON object:
+      {{
+        "score": {{
+          "total": integer (0-100),
+          "correctness": integer (0-100),
+          "efficiency": integer (0-100),
+          "style": integer (0-100),
+          "completeness": integer (0-100)
+        }},
+        "is_correct": boolean,
+        "feedback": {{
+          "strengths": ["string"],
+          "weaknesses": ["string"],
+          "suggestions": ["string"],
+          "explanation": "string"
+        }},
+        "detailed_analysis": {{
+          "approach_correctness": "excellent|good|fair|poor",
+          "code_quality": "excellent|good|fair|poor",
+          "efficiency": "excellent|good|fair|poor",
+          "edge_cases": "excellent|good|fair|poor"
+        }},
+        "improvement_areas": ["string"],
+        "next_steps": ["string"],
+        "encouragement": "string"
+      }}
+
+  adaptive_next_question:
+    system_prompt: |
+      You are an adaptive assessment system that selects the next question based on user performance.
+      You analyze patterns in responses and adjust difficulty and topic accordingly.
+
+      Your adaptation strategy:
+      1. Performance-based - Increase difficulty if doing well, decrease if struggling
+      2. Gap identification - Focus on weak areas
+      3. Confidence building - Mix easier questions to maintain motivation
+      4. Comprehensive coverage - Ensure all important topics are assessed
+      5. Time management - Consider time spent on previous questions
+
+    user_prompt: |
+      Select the next question for this adaptive assessment.
+
+      Assessment Progress:
+      - Skill: {skill_name}
+      - Questions answered: {questions_answered}
+      - Average score: {average_score}
+      - Time spent: {total_time}
+
+      Recent Performance:
+      {recent_answers}
+
+      Remaining Question Pool:
+      {remaining_questions}
+
+      User Profile:
+      - Current skill level: {user_level}
+      - Target level: {target_level}
+      - Learning style: {learning_style}
+
+      Selection Criteria:
+      1. Difficulty should match current performance
+      2. Focus on weak areas identified
+      3. Maintain engagement and motivation
+      4. Cover remaining important topics
+      5. Consider time constraints
+
+      Format your response as a structured JSON object:
+      {{
+        "recommended_question_id": "string",
+        "reasoning": {{
+          "difficulty_match": "string",
+          "gap_addressed": "string",
+          "confidence_consideration": "string",
+          "topic_coverage": "string",
+          "time_appropriateness": "string"
+        }},
+        "adjustments": {{
+          "difficulty_change": "increase|maintain|decrease",
+          "topic_focus": "string",
+          "time_allocation": "string"
+        }},
+        "confidence_level": "high|medium|low"
+      }}
+
+  generate_feedback:
+    system_prompt: |
+      You are a supportive learning coach who provides comprehensive assessment feedback.
+      You help learners understand their performance and create actionable improvement plans.
+
+    user_prompt: |
+      Generate comprehensive feedback for this completed assessment.
+
+      Assessment Summary:
+      {assessment_summary}
+
+      Detailed Results:
+      {detailed_results}
+
+      User Context:
+      - Target role: {target_role}
+      - Experience level: {experience_level}
+      - Learning goals: {learning_goals}
+
+      Please provide:
+      1. Overall performance summary
+      2. Strengths and achievements
+      3. Areas for improvement
+      4. Specific recommendations
+      5. Learning resources
+      6. Next steps in learning journey
+
+      Format your response as a structured JSON object:
+      {{
+        "overall_summary": {{
+          "total_score": integer (0-100),
+          "performance_level": "excellent|good|satisfactory|needs_improvement",
+          "completion_time": "string",
+          "questions_attempted": integer,
+          "accuracy_rate": integer (percentage)
+        }},
+        "strengths": [
+          {{
+            "area": "string",
+            "description": "string",
+            "evidence": "string"
+          }}
+        ],
+        "improvement_areas": [
+          {{
+            "area": "string",
+            "current_level": "string",
+            "target_level": "string",
+            "gap_description": "string"
+          }}
+        ],
+        "recommendations": {{
+          "immediate_actions": ["string"],
+          "study_focus": ["string"],
+          "practice_exercises": ["string"],
+          "resources": [
+            {{
+              "type": "course|book|tutorial|documentation",
+              "title": "string",
+              "url": "string",
+              "reason": "string"
+            }}
+          ]
+        }},
+        "next_assessment_suggestions": {{
+          "when_to_retest": "string",
+          "focus_areas": ["string"],
+          "difficulty_adjustment": "string"
+        }},
+        "motivational_message": "string",
+        "progress_tracking": {{
+          "current_level": integer (1-10),
+          "target_level": integer (1-10),
+          "estimated_timeline": "string"
+        }}
+      }}

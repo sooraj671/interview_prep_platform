@@ -1,0 +1,526 @@
+# Resume Parsing Prompts
+version: "1.0"
+description: "Prompts for resume parsing and skill extraction"
+
+prompts:
+  extract_skills:
+    system_prompt: |
+      You are an expert resume analyst and technical recruiter with deep knowledge of technology roles and skills.
+      You excel at identifying technical skills, experience levels, and candidate potential from resumes.
+      
+      Your expertise includes:
+      - Programming languages and frameworks
+      - Tools and technologies
+      - Methodologies and practices
+      - Domain knowledge areas
+      - Experience level assessment
+      - Project complexity evaluation
+    
+    user_prompt: |
+      Extract and analyze skills from this resume text.
+      
+      Resume Content:
+      {resume_text}
+      
+ Target Role: {target_role}
+      Experience Context: {experience_context}
+      
+      Please extract:
+      1. Technical skills with proficiency levels
+      2. Tools and technologies used
+      3. Methodologies and practices
+      4. Domain knowledge areas
+      5. Experience indicators
+      6. Project complexity indicators
+      7. Education and certifications
+      8. Career progression indicators
+      
+      Format your response as a structured JSON object:
+      {{
+        "skills": [
+          {{
+            "name": "string",
+            "category": "programming_language|framework|tool|methodology|domain",
+            "proficiency_level": "beginner|intermediate|advanced|expert",
+            "experience_years": float,
+            "last_used": "string",
+            "confidence": integer (0-100),
+            "evidence": ["string"]
+          }}
+        ],
+        "tools": [
+          {{
+            "name": "string",
+            "type": "software|hardware|platform|service",
+            "proficiency": "basic|intermediate|advanced",
+            "usage_context": "string",
+            "evidence": ["string"]
+          }}
+        ],
+        "methodologies": [
+          {{
+            "name": "string",
+            "type": "development|project_management|testing|devops",
+            "experience_level": "basic|intermediate|advanced",
+            "application_context": "string"
+          }}
+        ],
+        "domains": [
+          {{
+            "name": "string",
+            "experience_level": "familiar|proficient|expert",
+            "years_experience": float,
+            "projects_count": integer,
+            "evidence": ["string"]
+          }}
+        ],
+        "experience_indicators": {{
+          "total_years": float,
+          "relevant_years": float,
+          "leadership_experience": boolean,
+          "team_size": integer,
+          "project_complexity": "simple|moderate|complex|enterprise",
+          "industry_experience": ["string"]
+        }},
+        "education": [
+          {{
+            "degree": "string",
+            "field": "string",
+            "institution": "string",
+            "year": integer,
+            "relevance_to_target": "high|medium|low"
+          }}
+        ],
+        "certifications": [
+          {{
+            "name": "string",
+            "issuer": "string",
+            "date": "string",
+            "relevance": "high|medium|low"
+          }}
+        ],
+        "career_progression": {{
+          "entry_level": boolean,
+          "growth_trajectory": "flat|moderate|steep",
+          "responsibility_increase": "low|moderate|high",
+          "leadership_growth": "none|some|significant"
+        }}
+      }}
+
+  analyze_experience:
+    system_prompt: |
+      You are an expert career analyst who evaluates professional experience for technical roles.
+      You understand the nuances of different experience levels and can assess true capability beyond just years.
+      
+      Your analysis focuses on:
+      - Quality vs quantity of experience
+      - Complexity of projects handled
+      - Leadership and mentorship
+      - Business impact and results
+      - Technical depth and breadth
+      - Learning and growth trajectory
+    
+    user_prompt: |
+      Analyze the professional experience from this resume.
+      
+      Experience Section:
+      {experience_section}
+      
+      Target Role: {target_role}
+      Industry Context: {industry_context}
+      
+      Please analyze:
+      1. Quality and relevance of experience
+      2. Project complexity and scale
+      3. Leadership and mentorship experience
+      4. Technical depth and problem-solving
+      5. Business impact and achievements
+      6. Growth and learning trajectory
+      7. Readiness for target role
+      
+      Format your response as a structured JSON object:
+      {{
+        "experience_analysis": {{
+          "total_years": float,
+          "relevant_years": float,
+          "quality_score": integer (0-100),
+          "complexity_level": "basic|intermediate|advanced|expert",
+          "leadership_level": "individual|team_lead|manager|senior_leadership"
+        }},
+        "project_analysis": [
+          {{
+            "title": "string",
+            "duration": "string",
+            "complexity": "simple|moderate|complex|enterprise",
+            "scale": "small|medium|large|enterprise",
+            "role": "individual_contributor|team_member|team_lead|architect",
+            "technologies": ["string"],
+            "business_impact": "string",
+            "achievements": ["string"]
+          }}
+        ],
+        "leadership_experience": {{
+          "has_leadership": boolean,
+          "team_size_managed": integer,
+          "mentorship_experience": boolean,
+          "decision_making_level": "operational|tactical|strategic",
+          "cross_functional_work": boolean
+        }},
+        "technical_assessment": {{
+          "depth": "shallow|moderate|deep|expert",
+          "breadth": "narrow|moderate|broad|full_stack",
+          "problem_solving": "basic|intermediate|advanced|expert",
+          "architecture_experience": boolean,
+          "innovation_indicators": ["string"]
+        }},
+        "business_impact": [
+          {{
+            "area": "revenue|efficiency|quality|customer_satisfaction|innovation",
+            "description": "string",
+            "metrics": ["string"],
+            "significance": "low|medium|high"
+          }}
+        ],
+        "growth_trajectory": {{
+          "learning_rate": "slow|moderate|fast",
+          "responsibility_increase": "low|moderate|high",
+          "skill_expansion": "narrow|moderate|broad",
+          "career_progression": "stagnant|steady|rapid"
+        }},
+        "readiness_assessment": {{
+          "ready_for_target_role": boolean,
+          "readiness_score": integer (0-100),
+          "gaps_identified": ["string"],
+          "strengths_for_role": ["string"],
+          "development_needs": ["string"]
+        }}
+      }}
+
+  extract_projects:
+    system_prompt: |
+      You are an expert project analyst who can extract detailed project information from resumes.
+      You understand how to identify project scope, technologies used, challenges faced, and outcomes achieved.
+      
+      Your project analysis includes:
+      - Technical architecture and design
+      - Development methodologies used
+      - Team collaboration and dynamics
+      - Challenges and solutions
+      - Results and business impact
+      - Lessons learned and growth
+    
+    user_prompt: |
+      Extract detailed project information from this resume.
+      
+      Resume Content:
+      {resume_text}
+      
+      Focus Areas: {focus_areas}
+      Target Role: {target_role}
+      
+      Please extract:
+      1. Project details and scope
+      2. Technical architecture
+      3. Development methodologies
+      4. Team collaboration
+      5. Challenges and solutions
+      6. Results and impact
+      7. Technologies and tools used
+      
+      Format your response as a structured JSON array:
+      [
+        {{
+          "project_name": "string",
+          "duration": "string",
+          "role": "string",
+          "team_size": integer,
+          "project_type": "development|implementation|migration|research|consulting",
+          "scope": {{
+            "description": "string",
+            "complexity": "simple|moderate|complex|enterprise",
+            "scale": "small|medium|large|enterprise",
+            "industry": "string"
+          }},
+          "technical_details": {{
+            "architecture": "string",
+            "technologies": ["string"],
+            "frameworks": ["string"],
+            "databases": ["string"],
+            "tools": ["string"],
+            "methodologies": ["string"]
+          }},
+          "responsibilities": ["string"],
+          "challenges": [
+            {{
+              "description": "string",
+              "category": "technical|business|team|resource",
+              "severity": "low|medium|high",
+              "solution": "string"
+            }}
+          ],
+          "outcomes": {{
+            "deliverables": ["string"],
+            "metrics": ["string"],
+            "business_impact": "string",
+            "success_indicators": ["string"]
+          }},
+          "collaboration": {{
+            "stakeholders": ["string"],
+            "cross_functional": boolean,
+            "leadership_role": "none|participant|lead|owner",
+            "communication_methods": ["string"]
+          }},
+          "learning_growth": {{
+            "skills_developed": ["string"],
+            "lessons_learned": ["string"],
+            "achievements": ["string"]
+          }},
+          "relevance_to_target": {{
+            "score": integer (0-100),
+            "transferable_skills": ["string"],
+            "similarities": ["string"],
+            "gaps": ["string"]
+          }}
+        }}
+      ]
+
+  generate_profile_summary:
+    system_prompt: |
+      You are an expert talent evaluator who creates comprehensive candidate profiles.
+      You synthesize information from resumes to create holistic views of candidates' capabilities and potential.
+      
+      Your profile creation includes:
+      - Skills and capabilities assessment
+      - Experience quality evaluation
+      - Growth potential analysis
+      - Cultural fit indicators
+      - Role readiness assessment
+      - Development recommendations
+    
+    user_prompt: |
+      Generate a comprehensive candidate profile based on resume analysis.
+      
+      Resume Analysis:
+      {resume_analysis}
+      
+      Target Role: {target_role}
+      Company Context: {company_context}
+      Team Requirements: {team_requirements}
+      
+      Please create:
+      1. Executive summary of candidate
+      2. Skills and capabilities overview
+      3. Experience quality assessment
+      4. Growth potential analysis
+      5. Role readiness evaluation
+      6. Development recommendations
+      7. Interview focus areas
+      
+      Format your response as a structured JSON object:
+      {{
+        "executive_summary": {{
+          "candidate_level": "junior|mid_level|senior|lead|principal",
+          "overall_fit": "excellent|good|moderate|poor",
+          "key_strengths": ["string"],
+          "potential_concerns": ["string"],
+          "recommendation": "strong_proceed|proceed|caution|not_recommended"
+        }},
+        "skills_capabilities": {{
+          "technical_skills": {{
+            "core_competencies": ["string"],
+            "emerging_skills": ["string"],
+            "skill_gaps": ["string"],
+            "proficiency_distribution": {{
+              "expert": integer,
+              "advanced": integer,
+              "intermediate": integer,
+              "beginner": integer
+            }}
+          }},
+          "soft_skills": [
+            {{
+              "skill": "string",
+              "evidence": "string",
+              "proficiency": "high|medium|low"
+            }}
+          ],
+          "domain_expertise": [
+            {{
+              "domain": "string",
+              "experience_level": "familiar|proficient|expert",
+              "years_experience": float,
+              "notable_projects": ["string"]
+            }}
+          ]
+        }},
+        "experience_assessment": {{
+          "quality_score": integer (0-100),
+          "relevance_score": integer (0-100),
+          "complexity_handled": "simple|moderate|complex|enterprise",
+          "leadership_demonstrated": "none|some|significant",
+          "business_impact": "low|medium|high",
+          "growth_trajectory": "flat|moderate|steep"
+        }},
+        "growth_potential": {{
+          "learning_agility": "low|medium|high",
+          "adaptability": "low|medium|high",
+          "leadership_potential": "low|medium|high",
+          "innovation_capacity": "low|medium|high",
+          "development_areas": ["string"],
+          "estimated_timeline_to_readiness": "string"
+        }},
+        "role_readiness": {{
+          "ready_for_target_role": boolean,
+          "readiness_percentage": integer (0-100),
+          "critical_gaps": ["string"],
+          "strengths_for_role": ["string"],
+          "onboarding_needs": ["string"],
+          "success_probability": integer (0-100)
+        }},
+        "development_recommendations": {{
+          "immediate_focus": ["string"],
+          "short_term_goals": ["string"],
+          "long_term_development": ["string"],
+          "training_recommendations": [
+            {{
+              "type": "course|certification|project|mentorship",
+              "topic": "string",
+              "priority": "high|medium|low",
+              "estimated_duration": "string"
+            }}
+          ]
+        }},
+        "interview_focus": {{
+          "technical_areas": ["string"],
+          "behavioral_aspects": ["string"],
+          "experience_validation": ["string"],
+          "red_flags_to_check": ["string"],
+          "strengths_to_validate": ["string"]
+        }},
+        "cultural_fit_indicators": {{
+          "work_style": "individual|collaborative|mixed",
+          "communication_style": "direct|diplomatic|technical",
+          "leadership_style": "democratic|autocratic|transformational",
+          "adaptability": "low|medium|high",
+          "team_fit": "excellent|good|moderate|poor"
+        }}
+      }}
+
+  identify_gaps:
+    system_prompt: |
+      You are an expert skill gap analyst who identifies missing skills and experience for career transitions.
+      You excel at comparing current capabilities with role requirements and creating actionable development plans.
+      
+      Your gap analysis includes:
+      - Skill comparison and assessment
+      - Experience gap identification
+      - Priority ranking of gaps
+      - Learning path recommendations
+      - Timeline estimates
+      - Resource suggestions
+    
+    user_prompt: |
+      Identify skill and experience gaps for this candidate's target role transition.
+      
+      Candidate Profile:
+      {candidate_profile}
+      
+      Target Role Requirements:
+      {role_requirements}
+      
+      Current Skills Assessment:
+      {current_skills}
+      
+      Please analyze:
+      1. Skill gaps and their severity
+      2. Experience gaps and impact
+      3. Priority ranking for development
+      4. Learning recommendations
+      5. Timeline estimates
+      6. Resource suggestions
+      
+      Format your response as a structured JSON object:
+      {{
+        "gap_analysis": {{
+          "overall_readiness": integer (0-100),
+          "critical_gaps_count": integer,
+          "moderate_gaps_count": integer,
+          "minor_gaps_count": integer,
+          "estimated_development_time": "string"
+        }},
+        "skill_gaps": [
+          {{
+            "skill": "string",
+            "category": "technical|soft|domain",
+            "current_level": integer (0-10),
+            "required_level": integer (0-10),
+            "gap_severity": "critical|moderate|minor",
+            "impact_on_role": "high|medium|low",
+            "learning_difficulty": "easy|moderate|challenging",
+            "estimated_time_to_master": "string",
+            "prerequisites": ["string"],
+            "learning_resources": [
+              {{
+                "type": "course|book|tutorial|project|certification",
+                "title": "string",
+                "provider": "string",
+                "duration": "string",
+                "effectiveness": "high|medium|low"
+              }}
+            ]
+          }}
+        ],
+        "experience_gaps": [
+          {{
+            "area": "string",
+            "current_experience": "string",
+            "required_experience": "string",
+            "gap_severity": "critical|moderate|minor",
+            "impact_on_role": "high|medium|low",
+            "bridging_strategies": ["string"],
+            "estimated_time_to_gain": "string"
+          }}
+        ],
+        "development_priorities": [
+          {{
+            "priority": integer (1-10),
+            "area": "string",
+            "reason": "string",
+            "dependencies": ["string"],
+            "quick_wins": boolean
+          }}
+        ],
+        "learning_plan": {{
+          "phase_1": {{
+            "duration": "string",
+            "focus_areas": ["string"],
+            "expected_outcomes": ["string"],
+            "success_metrics": ["string"]
+          }},
+          "phase_2": {{
+            "duration": "string",
+            "focus_areas": ["string"],
+            "expected_outcomes": ["string"],
+            "success_metrics": ["string"]
+          }},
+          "phase_3": {{
+            "duration": "string",
+            "focus_areas": ["string"],
+            "expected_outcomes": ["string"],
+            "success_metrics": ["string"]
+          }}
+        }},
+        "recommendations": {{
+          "immediate_actions": ["string"],
+          "short_term_goals": ["string"],
+          "long_term_objectives": ["string"],
+          "alternative_paths": ["string"],
+          "reality_check": "string"
+        }},
+        "success_factors": {{
+          "key_determinants": ["string"],
+          "potential_blockers": ["string"],
+          "support_needed": ["string"],
+          "motivation_requirements": "string"
+        }}
+      }}
