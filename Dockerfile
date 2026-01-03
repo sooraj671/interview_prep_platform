@@ -17,7 +17,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY main_simple.py .
+COPY main_robust.py .
+COPY src/ src/
+COPY database_schema.sql .
 COPY scripts/ scripts/
 
 # Create non-root user
@@ -35,4 +37,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Start command
-CMD ["uvicorn", "main_simple:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main_robust:app", "--host", "0.0.0.0", "--port", "8000"]

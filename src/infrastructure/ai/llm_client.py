@@ -223,13 +223,13 @@ class OllamaClient(LLMClient):
             self._session = None
 
 
-class GroqClient(LLMClient):
-    """Groq LLM client implementation"""
+class InferenceClient(LLMClient):
+    """Inference.net LLM client implementation"""
     
     def __init__(self, config: AppConfig):
-        self.api_key = os.getenv("GROQ_API_KEY")
-        self.base_url = "https://api.groq.com/openai/v1"
-        self.default_model = "llama-3.1-8b-instant"
+        self.api_key = config.ai.inference_api_key
+        self.base_url = config.ai.inference_base_url
+        self.default_model = config.ai.inference_model
         self.request_timeout = config.ai.request_timeout
         self.max_retries = config.ai.max_retries
         self._session = None
@@ -245,16 +245,9 @@ class GroqClient(LLMClient):
         return self._session
     
     async def generate_text(self, request: LLMRequest) -> LLMResponse:
-        """Generate text using Groq"""
+        """Generate text using Inference.net"""
         import time
         import aiohttp
-        
-        if not self.api_key:
-            raise AIServiceException(
-                service="Groq",
-                operation="generate_text",
-                reason="GROQ_API_KEY not configured"
-            )
         
         session = await self._get_session()
         model = request.model or self.default_model
@@ -290,7 +283,7 @@ class GroqClient(LLMClient):
                         raise ModelUnavailableException(model)
                     elif response.status != 200:
                         raise AIServiceException(
-                            service="Groq",
+                            service="Inference",
                             operation="generate_text",
                             reason=f"HTTP {response.status}: {await response.text()}"
                         )
@@ -318,14 +311,14 @@ class GroqClient(LLMClient):
             except (aiohttp.ClientError, asyncio.TimeoutError) as e:
                 if attempt == retries:
                     raise AIServiceException(
-                        service="Groq",
+                        service="Inference",
                         operation="generate_text",
                         reason=f"Failed after {retries} retries: {str(e)}"
                     )
                 await asyncio.sleep(2 ** attempt)  # Exponential backoff
     
     async def generate_structured(self, request: LLMRequest, schema: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate structured output using Groq"""
+        """Generate structured output using Inference.net"""
         # Add JSON mode instruction
         schema_instruction = f"""
         Please respond with a valid JSON object that follows this exact schema:
@@ -357,24 +350,22 @@ class GroqClient(LLMClient):
             return json.loads(content)
         except json.JSONDecodeError as e:
             raise AIServiceException(
-                service="Groq",
+                service="Inference",
                 operation="generate_structured",
                 reason=f"Failed to parse JSON response: {str(e)}. Response: {response.content[:200]}..."
             )
     
     async def is_model_available(self, model: str) -> bool:
-        """Check if model is available in Groq"""
-        # Groq has a fixed set of models
-        supported_models = self.get_supported_models()
-        return model in supported_models
+        """Check if model is available in Inference.net"""
+        # For now, assume the configured model is available
+        return model == self.default_model
     
     def get_supported_models(self) -> List[str]:
         """Get list of supported models"""
         return [
-            "llama-3.1-405b-reasoning",
-            "llama-3.1-70b-versatile",
-            "llama-3.1-8b-instant",
-            "mixtral-8x7b-32768"
+            "google/gemma-3-27b-instruct/bf-16",
+            "meta-llama/Llama-3.3-70B-Instruct",
+            "mistralai/Mixtral-8x7B-Instruct-v0.1"
         ]
     
     async def close(self):
@@ -394,8 +385,8 @@ class LLMClientFactory:
         """Create LLM client for specified provider"""
         if provider.lower() == "ollama":
             return OllamaClient(self.config)
-        elif provider.lower() == "groq":
-            return GroqClient(self.config)
+        elif provider.lower() == "inference":
+            return InferenceClient(self.config)
         else:
             raise AIServiceException(
                 service="LLMClientFactory",
@@ -405,8 +396,5 @@ class LLMClientFactory:
     
     def create_default_client(self) -> LLMClient:
         """Create default LLM client based on configuration"""
-        # Check if Groq API key is available
-        if os.getenv("GROQ_API_KEY"):
-            return self.create_client("groq")
-        else:
-            return self.create_client("ollama")
+        # Use Inference.net as default
+        return self.create_client("inference")

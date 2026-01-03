@@ -54,25 +54,55 @@ class AppSettings(BaseSettings):
 
 class DatabaseSettings(BaseSettings):
     """Database settings"""
+    # PostgreSQL connection settings
+    host: str = Field(default="localhost", env="DB_HOST")
+    port: int = Field(default=5432, env="DB_PORT")
+    name: str = Field(default="interview_prep", env="DB_NAME")
+    user: str = Field(default="postgres", env="DB_USER")
+    password: str = Field(default="password", env="DB_PASSWORD")
+    
+    # Pool settings
+    pool_min_size: int = Field(default=5, env="DB_POOL_MIN_SIZE")
+    pool_max_size: int = Field(default=20, env="DB_POOL_MAX_SIZE")
+    command_timeout: int = Field(default=60, env="DB_COMMAND_TIMEOUT")
+    
+    # Legacy settings for compatibility
     url: str = Field(default="sqlite:///./app.db", env="DATABASE_URL")
     echo: bool = Field(default=False, env="DB_ECHO")
     pool_size: int = Field(default=10, env="DB_POOL_SIZE")
     max_overflow: int = Field(default=20, env="DB_MAX_OVERFLOW")
     pool_timeout: int = Field(default=30, env="DB_POOL_TIMEOUT")
     pool_recycle: int = Field(default=3600, env="DB_POOL_RECYCLE")
+    
+    # Migration settings
+    class Config:
+        extra = "allow"  # Allow extra fields for migration settings
 
 
 class AISettings(BaseSettings):
     """AI/LLM settings"""
+    # Inference.net settings
+    inference_api_key: str = Field(default="inference-7879a8ca800d4e39a0395f057f407f90", env="INFERENCE_API_KEY")
+    inference_base_url: str = Field(default="https://api.inference.net/v1", env="INFERENCE_BASE_URL")
+    inference_model: str = Field(default="google/gemma-3-27b-instruct/bf-16", env="INFERENCE_MODEL")
+    
+    # Ollama settings (fallback)
     ollama_base_url: str = Field(default="http://localhost:11434", env="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="llama2", env="OLLAMA_MODEL")
     ollama_timeout: int = Field(default=30, env="OLLAMA_TIMEOUT")
     ollama_max_retries: int = Field(default=3, env="OLLAMA_MAX_RETRIES")
     
+    # Groq settings (legacy)
     groq_api_key: Optional[str] = Field(default=None, env="GROQ_API_KEY")
     
+    # General AI settings
     temperature: float = Field(default=0.7, env="AI_TEMPERATURE")
     max_tokens: int = Field(default=2000, env="AI_MAX_TOKENS")
+    request_timeout: int = Field(default=60, env="AI_REQUEST_TIMEOUT")
+    max_retries: int = Field(default=3, env="AI_MAX_RETRIES")
+    
+    class Config:
+        extra = "allow"  # Allow extra fields from YAML
 
 
 class OAuthSettings(BaseSettings):
@@ -88,6 +118,9 @@ class OAuthSettings(BaseSettings):
     
     linkedin_client_id: Optional[str] = Field(default=None, env="LINKEDIN_CLIENT_ID")
     linkedin_client_secret: Optional[str] = Field(default=None, env="LINKEDIN_CLIENT_SECRET")
+    
+    class Config:
+        extra = "allow"  # Allow extra fields from YAML
 
 
 class AuthSettings(BaseSettings):
@@ -96,12 +129,18 @@ class AuthSettings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     jwt_access_token_expire_minutes: int = Field(default=30, env="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
     jwt_refresh_token_expire_days: int = Field(default=7, env="JWT_REFRESH_TOKEN_EXPIRE_DAYS")
+    
+    class Config:
+        extra = "allow"  # Allow extra fields from YAML
 
 
 class CacheSettings(BaseSettings):
     """Cache settings"""
     redis_url: Optional[str] = Field(default=None, env="REDIS_URL")
     default_ttl: int = Field(default=3600, env="CACHE_DEFAULT_TTL")
+    
+    class Config:
+        extra = "allow"  # Allow extra fields from YAML
 
 
 class MonitoringSettings(BaseSettings):
@@ -109,6 +148,9 @@ class MonitoringSettings(BaseSettings):
     log_level: str = Field(default="info", env="LOG_LEVEL")
     enable_metrics: bool = Field(default=True, env="ENABLE_METRICS")
     enable_tracing: bool = Field(default=False, env="ENABLE_TRACING")
+    
+    class Config:
+        extra = "allow"  # Allow extra fields from YAML
 
 
 class FeatureFlags(BaseSettings):
@@ -121,6 +163,9 @@ class FeatureFlags(BaseSettings):
     enable_leaderboards: bool = Field(default=True, env="ENABLE_LEADERBOARDS")
     enable_interviewer_profiles: bool = Field(default=True, env="ENABLE_INTERVIEWER_PROFILES")
     enable_analytics: bool = Field(default=True, env="ENABLE_ANALYTICS")
+    
+    class Config:
+        extra = "allow"  # Allow extra fields from YAML
 
 
 class Settings(BaseSettings):
@@ -138,7 +183,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
-        extra = "ignore"  # Allow extra fields from YAML
+        extra = "allow"  # Allow extra fields from YAML
 
 
 class ConfigLoader:
