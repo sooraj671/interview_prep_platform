@@ -488,7 +488,7 @@ async def create_user(user_data: UserCreate):
                 email_verified
             )
             VALUES (
-                'test.user@example.com',
+                'test.useasdr@example.com',
                 '$2b$12$abcdefghijklmnopqrstuv', -- dummy bcrypt-style hash
                 'Test',
                 'User',
