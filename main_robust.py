@@ -44,12 +44,24 @@ except ImportError as e:
     settings = None
     modules_loaded['config'] = False
 
-# Try to load database
+# Try to load database (without psycopg2)
 try:
-    # Test if we can import and use the database connection
-    from infrastructure.database.simple_connection import test_database_connection
-    modules_loaded['database'] = True
-    print("✅ Database module loaded (simple connection)")
+    # Test database connection without importing psycopg2
+    import os
+    from sqlalchemy.ext.asyncio import create_async_engine
+    
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        try:
+            engine = create_async_engine(database_url, echo=False)
+            modules_loaded['database'] = True
+            print("✅ Database module loaded (asyncpg connection)")
+        except Exception as e:
+            print(f"Database connection test failed: {e}")
+            modules_loaded['database'] = False
+    else:
+        modules_loaded['database'] = False
+        print("❌ DATABASE_URL not set")
 except ImportError as e:
     print(f"Database loading failed: {e}")
     modules_loaded['database'] = False
@@ -62,77 +74,107 @@ except ImportError as e:
     print(f"AI loading failed: {e}")
     modules_loaded['ai'] = False
 
-# Try to load auth
+# Try to load auth (direct import to avoid psycopg2 chain)
 try:
-    from presentation.api import auth_router
+    from presentation.api.v1.auth_simple import router as auth_router
     modules_loaded['auth'] = True
 except ImportError as e:
     print(f"Auth loading failed: {e}")
     modules_loaded['auth'] = False
 
-# Try to load users API (prefer ORM version)
+# Try to load users API (prefer clean ORM version - complete SQLAlchemy)
 try:
-    from presentation.api.v1.users_orm import router as users_router
+    from presentation.api.v1.users_clean_orm import router as users_router
     app.include_router(users_router)
     modules_loaded['users'] = True
-    print("✅ Users API loaded (ORM version)")
+    print("✅ Users API loaded (Clean ORM version - complete SQLAlchemy)")
 except ImportError:
     try:
-        from presentation.api.v1.users import router as users_router
+        from presentation.api.v1.users_isolated import router as users_router
         app.include_router(users_router)
         modules_loaded['users'] = True
-        print("✅ Users API loaded (SQL version)")
-    except ImportError as e:
-        print(f"❌ Failed to load Users API: {e}")
-        modules_loaded['users'] = False
+        print("✅ Users API loaded (Isolated version - no psycopg2)")
+    except ImportError:
+        try:
+            from presentation.api.v1.users_final import router as users_router
+            app.include_router(users_router)
+            modules_loaded['users'] = True
+            print("✅ Users API loaded (Final Working version)")
+        except ImportError:
+            try:
+                from presentation.api.v1.users_orm_robust import router as users_router
+                app.include_router(users_router)
+                modules_loaded['users'] = True
+                print("✅ Users API loaded (Robust ORM version)")
+            except ImportError:
+                try:
+                    from presentation.api.v1.users_orm_simple import router as users_router
+                    app.include_router(users_router)
+                    modules_loaded['users'] = True
+                    print("✅ Users API loaded (Simple ORM version)")
+                except ImportError:
+                    try:
+                        from presentation.api.v1.users_orm import router as users_router
+                        app.include_router(users_router)
+                        modules_loaded['users'] = True
+                        print("✅ Users API loaded (Full ORM version)")
+                    except ImportError:
+                        try:
+                            from presentation.api.v1.users import router as users_router
+                            app.include_router(users_router)
+                            modules_loaded['users'] = True
+                            print("✅ Users API loaded (SQL version)")
+                        except ImportError as e:
+                            print(f"❌ Failed to load Users API: {e}")
+                            modules_loaded['users'] = False
 
-# Try to load skills
+# Try to load skills (direct import to avoid psycopg2 chain)
 try:
-    from presentation.api import skills_router
+    from presentation.api.v1.skills import router as skills_router
     modules_loaded['skills'] = True
 except ImportError as e:
     print(f"Skills loading failed: {e}")
     modules_loaded['skills'] = False
 
-# Try to load assessments
+# Try to load assessments (direct import to avoid psycopg2 chain)
 try:
-    from presentation.api import assessments_router
+    from presentation.api.v1.assessments import router as assessments_router
     modules_loaded['assessments'] = True
 except ImportError as e:
     print(f"Assessments loading failed: {e}")
     modules_loaded['assessments'] = False
 
-# Try to load roadmaps
+# Try to load roadmaps (direct import to avoid psycopg2 chain)
 try:
-    from presentation.api import roadmaps_router
+    from presentation.api.v1.roadmaps import router as roadmaps_router
     modules_loaded['roadmaps'] = True
 except ImportError as e:
     print(f"Roadmaps loading failed: {e}")
     modules_loaded['roadmaps'] = False
 
-# Try to load analytics
+# Try to load analytics (direct import to avoid psycopg2 chain)
 try:
-    from presentation.api import analytics_router
+    from presentation.api.v1.analytics import router as analytics_router
     modules_loaded['analytics'] = True
 except ImportError as e:
     print(f"Analytics loading failed: {e}")
     modules_loaded['analytics'] = False
 
-# Try to load database test
+# Try to load AI test (direct import to avoid psycopg2 chain)
 try:
-    from presentation.api import database_test_router
-    modules_loaded['database_test'] = True
-except ImportError as e:
-    print(f"Database test loading failed: {e}")
-    modules_loaded['database_test'] = False
-
-# Try to load AI test
-try:
-    from presentation.api import ai_test_router
+    from presentation.api.v1.ai_test import router as ai_test_router
     modules_loaded['ai_test'] = True
 except ImportError as e:
-    print(f"AI test loading failed: {e}")
+    print(f"AI Test loading failed: {e}")
     modules_loaded['ai_test'] = False
+
+# Try to load database test (direct import to avoid psycopg2 chain)
+try:
+    from presentation.api.v1.database_test import router as database_test_router
+    modules_loaded['database_test'] = True
+except ImportError as e:
+    print(f"Database Test loading failed: {e}")
+    modules_loaded['database_test'] = False
 
 # Include routers that loaded successfully
 if modules_loaded.get('auth'):

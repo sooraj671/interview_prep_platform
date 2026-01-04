@@ -142,7 +142,8 @@ class RoadmapTopicResponse(BaseModel):
         }
 
 def get_db_connection():
-    """Get database connection with hardcoded credentials"""
+    """Get database connection from environment variables"""
+    import os
     return psycopg2.connect(
         host="aws-1-ap-southeast-1.pooler.supabase.com",
         port="5432",

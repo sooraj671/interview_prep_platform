@@ -14,8 +14,8 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from infrastructure.database.models.base import Base
-from infrastructure.database.models.user import User, UserProfile, UserStats, UserSession
-from config.settings import get_settings
+from infrastructure.database.models import *  # Import all models
+import os
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -26,13 +26,15 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Get database URL from settings
-settings = get_settings()
-db_url = (
-    f"postgresql+asyncpg://{settings.database.user}:"
-    f"{settings.database.password}@{settings.database.host}:"
-    f"{settings.database.port}/{settings.database.name}"
-)
+# Get database URL from environment
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    raise ValueError("DATABASE_URL environment variable is not set")
+
+# Convert to asyncpg format if needed
+if db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 config.set_main_option("sqlalchemy.url", db_url)
 
 # add your model's MetaData object here

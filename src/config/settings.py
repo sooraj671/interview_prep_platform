@@ -172,6 +172,24 @@ class FeatureFlags(BaseSettings):
         extra = "allow"  # Allow extra fields from YAML
 
 
+class AppConfig(BaseSettings):
+    """Application configuration (alias for Settings)"""
+    app: AppSettings = Field(default_factory=AppSettings)
+    database: DatabaseSettings = Field(default_factory=DatabaseSettings)
+    ai: AISettings = Field(default_factory=AISettings)
+    oauth: OAuthSettings = Field(default_factory=OAuthSettings)
+    auth: AuthSettings = Field(default_factory=AuthSettings)
+    cache: CacheSettings = Field(default_factory=CacheSettings)
+    monitoring: MonitoringSettings = Field(default_factory=MonitoringSettings)
+    feature_flags: FeatureFlags = Field(default_factory=FeatureFlags)
+    
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+        extra = "allow"  # Allow extra fields from YAML
+
+
 class Settings(BaseSettings):
     """Main settings class"""
     app: AppSettings = Field(default_factory=AppSettings)

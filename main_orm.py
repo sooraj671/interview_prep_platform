@@ -1,70 +1,63 @@
 """
-Main Application - SQLAlchemy ORM Version
-FastAPI application with SQLAlchemy ORM and Clean Architecture
+Interview Preparation Platform - ORM Version
+Main application using SQLAlchemy ORM repositories
 """
+
 import os
 import sys
-import asyncio
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from datetime import datetime, timezone
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 # Add src to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-# Global variables
-sqlalchemy_manager = None
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Import ORM session manager
+from infrastructure.database.orm_session import orm_session_manager
+from infrastructure.database.orm_dependencies import (
+    get_user_repository, get_skill_repository, get_roadmap_repository,
+    get_assessment_repository, get_analytics_repository
+)
+
+# Import API routers
+from presentation.api.v1.users_orm_robust import router as users_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    # Startup
-    print("🚀 Starting Interview Preparation Platform with SQLAlchemy ORM...")
+    logger.info("🚀 Starting Interview Preparation Platform with ORM...")
     
+    # Initialize database tables if needed
     try:
-        # Load configuration
-        from config.settings import get_settings
-        settings = get_settings()
-        print("✅ Configuration loaded")
-        
-        # Initialize SQLAlchemy
-        from infrastructure.database.sqlalchemy_connection import get_sqlalchemy_manager
-        global sqlalchemy_manager
-        sqlalchemy_manager = await get_sqlalchemy_manager(settings)
-        print("✅ SQLAlchemy initialized")
-        
-        # Test database connection
-        from infrastructure.database.sqlalchemy_connection import get_db_session
-        async with get_db_session() as session:
-            result = await session.execute("SELECT 1")
-            print("✅ Database connection verified")
-        
-        print("✅ Application startup complete")
-        
+        await orm_session_manager.create_tables()
+        logger.info("✅ Database tables initialized")
     except Exception as e:
-        print(f"❌ Startup failed: {e}")
-        raise
+        logger.error(f"❌ Failed to initialize database tables: {e}")
     
+    logger.info("✅ Application started successfully")
     yield
     
-    # Shutdown
-    print("🔄 Shutting down application...")
-    try:
-        if sqlalchemy_manager:
-            await sqlalchemy_manager.close()
-        print("✅ Application shutdown complete")
-    except Exception as e:
-        print(f"❌ Shutdown error: {e}")
+    logger.info("🛑 Shutting down Interview Preparation Platform...")
+    await orm_session_manager.close()
+    logger.info("✅ Application shutdown complete")
 
 # Create FastAPI app
 app = FastAPI(
-    title="Interview Preparation Platform - ORM Version",
+    title="Interview Preparation Platform - ORM",
     description="AI-powered interview preparation platform with SQLAlchemy ORM",
     version="2.0.0",
     docs_url="/docs",
-    redoc_url="/redoc",
-    lifespan=lifespan
+    redoc_url="/redoc"
 )
 
 # Add CORS middleware
@@ -76,88 +69,72 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Global exception handler"""
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": "Internal server error",
-            "message": str(exc) if app.debug else "Something went wrong"
-        }
-    )
+app.router.lifespan_context = lifespan
 
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    try:
-        # Test database connection
-        from infrastructure.database.sqlalchemy_connection import get_db_session
-        async with get_db_session() as session:
-            result = await session.execute("SELECT 1")
-            
-        return {
-            "status": "healthy",
-            "database": "connected",
-            "orm": "sqlalchemy",
-            "version": "2.0.0"
-        }
-    except Exception as e:
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "unhealthy",
-                "database": "disconnected",
-                "error": str(e)
-            }
-        )
+# Include API routers
+app.include_router(users_router, prefix="/api/v1/users", tags=["users"])
 
-# Root endpoint
+# Basic endpoints
 @app.get("/")
 async def root():
     """Root endpoint"""
     return {
-        "message": "Interview Preparation Platform - ORM Version",
+        "message": "Interview Preparation Platform API - ORM Version",
+        "status": "running",
         "version": "2.0.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "docs": "/docs",
-        "health": "/health"
+        "redoc": "/redoc",
+        "database": "SQLAlchemy ORM with PostgreSQL"
     }
 
-# Include API routers
-try:
-    from presentation.api.v1.users_orm import router as users_router
-    app.include_router(users_router)
-    print("✅ Users API loaded (ORM version)")
-except ImportError as e:
-    print(f"❌ Failed to load Users API: {e}")
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": "2.0.0",
+        "database": "SQLAlchemy ORM",
+        "orm": "enabled"
+    }
 
-# Load additional routers if they exist
-additional_routers = [
-    ("auth", "Authentication API"),
-    ("skills", "Skills API"),
-    ("assessments", "Assessments API"),
-    ("roadmaps", "Roadmaps API"),
-    ("analytics", "Analytics API"),
-    ("ai_test", "AI Test API")
-]
+@app.get("/ready")
+async def readiness_check():
+    """Readiness check endpoint"""
+    return {
+        "status": "ready",
+        "database": "SQLAlchemy ORM configured",
+        "environment": os.getenv("APP_ENV", "development"),
+        "version": "2.0.0",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
 
-for router_name, description in additional_routers:
-    try:
-        router_module = __import__(f"presentation.api.v1.{router_name}", fromlist=["router"])
-        if hasattr(router_module, "router"):
-            app.include_router(router_module.router)
-            print(f"✅ {description} loaded")
-    except ImportError:
-        print(f"⚠️ {description} not available")
+# Repository test endpoints
+@app.get("/test/repositories")
+async def test_repositories(
+    user_repo=Depends(get_user_repository),
+    skill_repo=Depends(get_skill_repository),
+    roadmap_repo=Depends(get_roadmap_repository),
+    assessment_repo=Depends(get_assessment_repository),
+    analytics_repo=Depends(get_analytics_repository)
+):
+    """Test repository dependencies"""
+    return {
+        "message": "All ORM repositories initialized successfully",
+        "repositories": {
+            "user": type(user_repo).__name__,
+            "skill": type(skill_repo).__name__,
+            "roadmap": type(roadmap_repo).__name__,
+            "assessment": type(assessment_repo).__name__,
+            "analytics": type(analytics_repo).__name__
+        }
+    }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main_orm:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    
+    port = int(os.getenv("PORT", 8000))
+    logger.info(f"Starting ORM application on port {port}")
+    
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")

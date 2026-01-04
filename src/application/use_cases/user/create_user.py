@@ -8,7 +8,7 @@ from uuid import UUID
 
 from domain.entities.user import User, UserRole, AuthProvider, UserStatus, UserProfile, UserStats
 from application.interfaces.repositories import UserRepository
-from shared.exceptions.domain_exceptions import DuplicateResourceException, ValidationException
+from shared.exceptions.domain_exceptions import ConflictException, ValidationException
 
 
 class CreateUserUseCase:
@@ -26,9 +26,9 @@ class CreateUserUseCase:
         # Check if user already exists
         existing_user = await self.user_repository.get_by_email(user_data["email"])
         if existing_user:
-            raise DuplicateResourceException(
+            raise ConflictException(
                 resource="user",
-                field="email",
+                reason="User with this email already exists",
                 value=user_data["email"]
             )
         

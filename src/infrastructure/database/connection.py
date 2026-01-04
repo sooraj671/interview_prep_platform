@@ -4,17 +4,18 @@ PostgreSQL connection management following Clean Architecture
 """
 import os
 import asyncpg
+import aiofiles
 from typing import Optional
 from contextlib import asynccontextmanager
 
-from config.settings import AppConfig
+from ..config.settings import AppSettings
 from shared.exceptions.domain_exceptions import DatabaseException
 
 
 class DatabaseConnection:
     """Database connection manager"""
     
-    def __init__(self, config: AppConfig):
+    def __init__(self, config: AppSettings):
         self.config = config
         self._pool: Optional[asyncpg.Pool] = None
     
@@ -100,7 +101,7 @@ class DatabaseConnection:
 class DatabaseManager:
     """Database manager for handling database operations"""
     
-    def __init__(self, config: AppConfig):
+    def __init__(self, config: AppSettings):
         self.config = config
         self.connection = DatabaseConnection(config)
     
@@ -139,8 +140,8 @@ class DatabaseManager:
         )
         
         try:
-            with open(schema_file, 'r') as f:
-                schema_sql = f.read()
+            async with aiofiles.open(schema_file, 'r') as f:
+                schema_sql = await f.read()
             
             # Split by semicolons and execute each statement
             statements = [stmt.strip() for stmt in schema_sql.split(';') if stmt.strip()]
@@ -170,7 +171,7 @@ class DatabaseManager:
 _database_manager: Optional[DatabaseManager] = None
 
 
-async def get_database_manager(config: AppConfig) -> DatabaseManager:
+async def get_database_manager(config: AppSettings) -> DatabaseManager:
     """Get or create database manager instance"""
     global _database_manager
     
