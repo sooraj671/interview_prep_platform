@@ -53,7 +53,6 @@ class Roadmap(BaseModel):
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="roadmaps")
     topics: Mapped[List["RoadmapTopic"]] = relationship(
         "RoadmapTopic", 
         back_populates="roadmap", 

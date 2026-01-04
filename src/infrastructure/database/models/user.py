@@ -15,7 +15,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB, INET
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import text
 
-from .base import BaseModel
+from .base import BaseModel, Base
 
 
 class User(BaseModel):
@@ -52,64 +52,11 @@ class User(BaseModel):
     two_factor_enabled: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("FALSE"))
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
-    # Relationships
-    profile: Mapped[Optional["UserProfile"]] = relationship(
-        "UserProfile", 
-        back_populates="user", 
-        cascade="all, delete-orphan",
-        uselist=False
-    )
-    stats: Mapped[Optional["UserStats"]] = relationship(
-        "UserStats", 
-        back_populates="user", 
-        cascade="all, delete-orphan",
-        uselist=False
-    )
-    sessions: Mapped[List["UserSession"]] = relationship(
-        "UserSession", 
-        back_populates="user", 
-        cascade="all, delete-orphan"
-    )
-    skill_progress: Mapped[List["UserSkillProgress"]] = relationship(
-        "UserSkillProgress", 
-        back_populates="user", 
-        cascade="all, delete-orphan"
-    )
-    roadmaps: Mapped[List["Roadmap"]] = relationship(
-        "Roadmap", 
-        back_populates="user", 
-        cascade="all, delete-orphan"
-    )
-    assessments: Mapped[List["Assessment"]] = relationship(
-        "Assessment", 
-        back_populates="user", 
-        cascade="all, delete-orphan"
-    )
-    analytics: Mapped[List["Analytics"]] = relationship(
-        "Analytics", 
-        back_populates="user", 
-        cascade="all, delete-orphan"
-    )
-    analytics_data_points: Mapped[List["AnalyticsDataPoint"]] = relationship(
-        "AnalyticsDataPoint", 
-        back_populates="user", 
-        cascade="all, delete-orphan"
-    )
-    
     # Constraints
     __table_args__ = (
-        CheckConstraint(
-            "role IN ('candidate', 'interviewer', 'admin', 'recruiter')",
-            name="check_user_role"
-        ),
-        CheckConstraint(
-            "auth_provider IN ('email', 'google', 'github', 'linkedin')",
-            name="check_auth_provider"
-        ),
-        CheckConstraint(
-            "status IN ('active', 'inactive', 'suspended', 'pending_verification')",
-            name="check_user_status"
-        ),
+        CheckConstraint("role IN ('candidate', 'interviewer', 'admin', 'recruiter')", name="check_user_role"),
+        CheckConstraint("auth_provider IN ('email', 'google', 'github', 'linkedin')", name="check_auth_provider"),
+        CheckConstraint("status IN ('active', 'inactive', 'suspended', 'pending_verification')", name="check_user_status"),
         Index("idx_users_email", "email"),
         Index("idx_users_status", "status"),
         Index("idx_users_role", "role"),
@@ -117,7 +64,7 @@ class User(BaseModel):
     )
 
 
-class UserProfile(BaseModel):
+class UserProfile(Base):
     """User profiles table"""
     __tablename__ = "user_profiles"
     
@@ -146,12 +93,9 @@ class UserProfile(BaseModel):
         default=dict, 
         server_default=text("'{}'::jsonb")
     )
-    
-    # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="profile")
 
 
-class UserStats(BaseModel):
+class UserStats(Base):
     """User statistics table"""
     __tablename__ = "user_stats"
     
@@ -173,9 +117,6 @@ class UserStats(BaseModel):
     skill_count: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"))
     roadmap_count: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"))
     last_active: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    
-    # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="stats")
 
 
 class UserSession(BaseModel):
@@ -207,9 +148,6 @@ class UserSession(BaseModel):
     )
     ip_address: Mapped[Optional[str]] = mapped_column(INET, nullable=True)
     user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    
-    # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="sessions")
     
     # Indexes
     __table_args__ = (

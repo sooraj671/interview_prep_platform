@@ -217,7 +217,6 @@ class UserSkillProgress(BaseModel):
     )
     
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="skill_progress")
     skill: Mapped["Skill"] = relationship("Skill", back_populates="user_progress")
     
     # Constraints

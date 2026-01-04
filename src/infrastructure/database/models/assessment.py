@@ -62,7 +62,6 @@ class Assessment(BaseModel):
     last_activity_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
     # Relationships
-    user: Mapped[Optional["User"]] = relationship("User", back_populates="assessments")
     roadmap: Mapped[Optional["Roadmap"]] = relationship("Roadmap")
     questions: Mapped[List["AssessmentQuestion"]] = relationship(
         "AssessmentQuestion", 

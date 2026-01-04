@@ -62,9 +62,6 @@ class Analytics(BaseModel):
         server_default=text("'{}'::jsonb")
     )
     
-    # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="analytics")
-    
     # Indexes
     __table_args__ = (
         Index("idx_analytics_user_id", "user_id"),
@@ -82,7 +79,7 @@ class AnalyticsDataPoint(BaseModel):
     metric_type: Mapped[str] = mapped_column(String(100), nullable=False)
     metric_name: Mapped[str] = mapped_column(String(255), nullable=False)
     value: Mapped[float] = mapped_column(DECIMAL(10, 4), nullable=False)
-    metadata: Mapped[Dict[str, Any]] = mapped_column(
+    metric_metadata: Mapped[Dict[str, Any]] = mapped_column(
         JSONB, 
         default=dict, 
         server_default=text("'{}'::jsonb")
@@ -92,9 +89,6 @@ class AnalyticsDataPoint(BaseModel):
         server_default=func.now(),
         nullable=False
     )
-    
-    # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="analytics_data_points")
     
     # Constraints
     __table_args__ = (
