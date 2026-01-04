@@ -20,7 +20,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main_robust.py .
 COPY src/ src/
 COPY database_schema.sql .
-COPY scripts/ scripts/
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
