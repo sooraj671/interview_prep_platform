@@ -70,13 +70,21 @@ except ImportError as e:
     print(f"Auth loading failed: {e}")
     modules_loaded['auth'] = False
 
-# Try to load users
+# Try to load users API (prefer ORM version)
 try:
-    from presentation.api import users_router
+    from presentation.api.v1.users_orm import router as users_router
+    app.include_router(users_router)
     modules_loaded['users'] = True
-except ImportError as e:
-    print(f"Users loading failed: {e}")
-    modules_loaded['users'] = False
+    print("✅ Users API loaded (ORM version)")
+except ImportError:
+    try:
+        from presentation.api.v1.users import router as users_router
+        app.include_router(users_router)
+        modules_loaded['users'] = True
+        print("✅ Users API loaded (SQL version)")
+    except ImportError as e:
+        print(f"❌ Failed to load Users API: {e}")
+        modules_loaded['users'] = False
 
 # Try to load skills
 try:
@@ -131,10 +139,7 @@ if modules_loaded.get('auth'):
     app.include_router(auth_router, tags=["Authentication"])
     print("✅ Auth API loaded")
 
-if modules_loaded.get('users'):
-    app.include_router(users_router, tags=["Users"])
-    print("✅ Users API loaded")
-
+# Users router already included in the loading section above
 if modules_loaded.get('skills'):
     app.include_router(skills_router, tags=["Skills"])
     print("✅ Skills API loaded")
@@ -156,7 +161,7 @@ if modules_loaded.get('database_test'):
     print("✅ Database Test API loaded")
 
 if modules_loaded.get('ai_test'):
-    app.include_router(ai_test_router, tags=["AI Testing"])
+    app.include_router(ai_test_router, tags=["AI Test"])
     print("✅ AI Test API loaded")
 
 # Basic endpoints

@@ -66,6 +66,10 @@ class DatabaseSettings(BaseSettings):
     pool_max_size: int = Field(default=20, env="DB_POOL_MAX_SIZE")
     command_timeout: int = Field(default=60, env="DB_COMMAND_TIMEOUT")
     
+    # SQLAlchemy settings
+    echo_sql: bool = Field(default=False, env="DB_ECHO_SQL")
+    echo_pool: bool = Field(default=False, env="DB_ECHO_POOL")
+    
     # Legacy settings for compatibility
     url: str = Field(default="sqlite:///./app.db", env="DATABASE_URL")
     echo: bool = Field(default=False, env="DB_ECHO")
@@ -246,3 +250,13 @@ class ConfigLoader:
 
 # Global config loader instance
 config_loader = ConfigLoader()
+
+
+def get_settings() -> Settings:
+    """Get application settings (convenience function)"""
+    return config_loader.load_config()
+
+
+def reload_settings() -> Settings:
+    """Reload application settings"""
+    return config_loader.reload_config()

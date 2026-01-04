@@ -34,6 +34,7 @@ uuid==1.30
 click==8.1.7
 python-dateutil==2.8.2
 pytz==2023.3
+greenlet==3.3.0
 
 # Development & Testing
 pytest==7.4.3
