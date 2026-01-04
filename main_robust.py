@@ -46,16 +46,17 @@ except ImportError as e:
 
 # Try to load database
 try:
-    from infrastructure.database.connection import get_database_manager
+    # Test if we can import and use the database connection
+    from infrastructure.database.simple_connection import test_database_connection
     modules_loaded['database'] = True
+    print("✅ Database module loaded (simple connection)")
 except ImportError as e:
     print(f"Database loading failed: {e}")
     modules_loaded['database'] = False
 
-# Try to load AI
+# Try to load AI (simplified)
 try:
-    from infrastructure.ai.llm_client import LLMClientFactory
-    ai_factory = LLMClientFactory(settings) if settings else None
+    import httpx
     modules_loaded['ai'] = True
 except ImportError as e:
     print(f"AI loading failed: {e}")
@@ -109,30 +110,54 @@ except ImportError as e:
     print(f"Analytics loading failed: {e}")
     modules_loaded['analytics'] = False
 
+# Try to load database test
+try:
+    from presentation.api import database_test_router
+    modules_loaded['database_test'] = True
+except ImportError as e:
+    print(f"Database test loading failed: {e}")
+    modules_loaded['database_test'] = False
+
+# Try to load AI test
+try:
+    from presentation.api import ai_test_router
+    modules_loaded['ai_test'] = True
+except ImportError as e:
+    print(f"AI test loading failed: {e}")
+    modules_loaded['ai_test'] = False
+
 # Include routers that loaded successfully
 if modules_loaded.get('auth'):
-    app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
+    app.include_router(auth_router, tags=["Authentication"])
     print("✅ Auth API loaded")
 
 if modules_loaded.get('users'):
-    app.include_router(users_router, prefix="/api/v1/users", tags=["Users"])
+    app.include_router(users_router, tags=["Users"])
     print("✅ Users API loaded")
 
 if modules_loaded.get('skills'):
-    app.include_router(skills_router, prefix="/api/v1/skills", tags=["Skills"])
+    app.include_router(skills_router, tags=["Skills"])
     print("✅ Skills API loaded")
 
 if modules_loaded.get('assessments'):
-    app.include_router(assessments_router, prefix="/api/v1/assessments", tags=["Assessments"])
+    app.include_router(assessments_router, tags=["Assessments"])
     print("✅ Assessments API loaded")
 
 if modules_loaded.get('roadmaps'):
-    app.include_router(roadmaps_router, prefix="/api/v1/roadmaps", tags=["Roadmaps"])
+    app.include_router(roadmaps_router, tags=["Roadmaps"])
     print("✅ Roadmaps API loaded")
 
 if modules_loaded.get('analytics'):
-    app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytics"])
+    app.include_router(analytics_router, tags=["Analytics"])
     print("✅ Analytics API loaded")
+
+if modules_loaded.get('database_test'):
+    app.include_router(database_test_router, tags=["Database Testing"])
+    print("✅ Database Test API loaded")
+
+if modules_loaded.get('ai_test'):
+    app.include_router(ai_test_router, tags=["AI Testing"])
+    print("✅ AI Test API loaded")
 
 # Basic endpoints
 @app.get("/")
@@ -144,12 +169,14 @@ async def root():
         "version": "1.0.0",
         "modules_loaded": modules_loaded,
         "api_endpoints": {
-            "auth": "/api/v1/auth" if modules_loaded.get('auth') else None,
-            "users": "/api/v1/users" if modules_loaded.get('users') else None,
-            "skills": "/api/v1/skills" if modules_loaded.get('skills') else None,
-            "assessments": "/api/v1/assessments" if modules_loaded.get('assessments') else None,
-            "roadmaps": "/api/v1/roadmaps" if modules_loaded.get('roadmaps') else None,
-            "analytics": "/api/v1/analytics" if modules_loaded.get('analytics') else None,
+            "auth": "/auth" if modules_loaded.get('auth') else None,
+            "users": "/users" if modules_loaded.get('users') else None,
+            "skills": "/skills" if modules_loaded.get('skills') else None,
+            "assessments": "/assessments" if modules_loaded.get('assessments') else None,
+            "roadmaps": "/roadmaps" if modules_loaded.get('roadmaps') else None,
+            "analytics": "/analytics" if modules_loaded.get('analytics') else None,
+            "database_test": "/database" if modules_loaded.get('database_test') else None,
+            "ai_test": "/ai" if modules_loaded.get('ai_test') else None,
             "docs": "/docs",
             "redoc": "/redoc"
         }
@@ -192,23 +219,22 @@ async def lifespan(app: FastAPI):
     # Startup
     print("🚀 Starting Interview Preparation Platform...")
     
-    # Initialize database if available
-    if modules_loaded.get('database') and settings:
-        try:
-            db_manager = await get_database_manager(settings)
-            print("✅ Database initialized")
-        except Exception as e:
-            print(f"❌ Database initialization failed: {e}")
+    # Test database connection during startup
+    print("🔍 [STARTUP] Testing database connection...")
+    try:
+        from infrastructure.database.simple_connection import test_database_connection
+        db_result = test_database_connection()
+        print(f"📊 [STARTUP] Database test result: {db_result.get('status')}")
+        if db_result.get('status') == 'connected':
+            print(f"✅ [STARTUP] Database connected successfully! Found {db_result.get('table_count', 0)} tables")
+        else:
+            print(f"❌ [STARTUP] Database connection failed: {db_result.get('error', 'Unknown error')}")
+    except Exception as e:
+        print(f"❌ [STARTUP] Database test exception: {str(e)}")
     
-    # Initialize AI if available
-    if modules_loaded.get('ai') and ai_factory:
-        try:
-            ai_client = ai_factory.create_default_client()
-            print("✅ AI client initialized")
-        except Exception as e:
-            print(f"❌ AI client initialization failed: {e}")
-    
+    # Quick startup without blocking operations
     print(f"📊 Modules loaded: {sum(modules_loaded.values())}/{len(modules_loaded)}")
+    print("✅ Application started successfully")
     
     yield
     

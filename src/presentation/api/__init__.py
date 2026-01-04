@@ -8,7 +8,9 @@ from .v1 import (
     skills_router,
     assessments_router,
     roadmaps_router,
-    analytics_router
+    analytics_router,
+    ai_test_router,
+    database_test_router
 )
 
 __all__ = [
@@ -17,5 +19,7 @@ __all__ = [
     "skills_router", 
     "assessments_router",
     "roadmaps_router",
-    "analytics_router"
+    "analytics_router",
+    "ai_test_router",
+    "database_test_router"
 ]

@@ -9,18 +9,19 @@ restartPolicyMaxRetries = 10
 name = "api"
 sourceDir = "."
 
-[services.variables]
+[services.variables.env]
 PORT = "8000"
 PYTHON_VERSION = "3.11"
 
-# Database Configuration
-DB_HOST = "${{POSTGRES_HOST}}"
-DB_PORT = "${{POSTGRES_PORT}}"
-DB_NAME = "${{POSTGRES_DATABASE}}"
-DB_USER = "${{POSTGRES_USER}}"
-DB_PASSWORD = "${{POSTGRES_PASSWORD}}"
+# Database Configuration - Supabase
+DB_HOST = "aws-1-ap-southeast-1.pooler.supabase.com"
+DB_PORT = "5432"
+DB_NAME = "postgres"
+DB_USER = "postgres.dfymgksznlpyfuueqomg"
+DB_PASSWORD = "QpshyJLctAZsLFYl"
+DATABASE_URL = "postgresql://postgres.dfymgksznlpyfuueqomg:QpshyJLctAZsLFYl@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
 
-# AI Configuration
+# AI Configuration - Inference.net
 INFERENCE_API_KEY = "inference-7879a8ca800d4e39a0395f057f407f90"
 INFERENCE_BASE_URL = "https://api.inference.net/v1"
 INFERENCE_MODEL = "google/gemma-3-27b-instruct/bf-16"
@@ -36,12 +37,12 @@ APP_ENV = "production"
 DEBUG = "false"
 
 # Authentication
-JWT_SECRET_KEY = "${{JWT_SECRET_KEY}}"
+JWT_SECRET_KEY = "railway-production-jwt-secret-key-change-in-production"
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = "30"
 JWT_REFRESH_TOKEN_EXPIRE_DAYS = "7"
 
-# CORS
+# CORS Configuration
 ALLOWED_ORIGINS = "*"
 ALLOWED_METHODS = "GET,POST,PUT,DELETE,OPTIONS"
 ALLOWED_HEADERS = "*"
