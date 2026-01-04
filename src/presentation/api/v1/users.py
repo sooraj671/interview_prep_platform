@@ -34,7 +34,7 @@ class UserCreate(BaseModel):
     preferences: Dict[str, Any] = {}
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "email": "john.doe@example.com",
                 "password_hash": "hashed_password_here",
@@ -51,6 +51,7 @@ class UserCreate(BaseModel):
                 "linkedin_url": "https://linkedin.com/in/johndoe",
                 "github_url": "https://github.com/johndoe",
                 "portfolio_url": "https://johndoe.dev",
+                "resume_url": "https://johndoe.dev/resume.pdf",
                 "skills": ["Python", "JavaScript", "PostgreSQL"],
                 "preferences": {"notifications": True, "theme": "dark"}
             }
@@ -414,7 +415,7 @@ async def get_user(
         }
     }
 )
-async def create_user(user_data: UserCreate = Body(...)):
+async def create_user(user_data: UserCreate):
     """
     Create a new user
     
@@ -435,19 +436,33 @@ async def create_user(user_data: UserCreate = Body(...)):
     
     **Required Fields:**
     - `email` (string): User email address
+    - `password_hash` (string): Hashed password
     - `first_name` (string): User first name
     - `last_name` (string): User last name
     
     **Optional Fields:**
+    - `role` (string): User role (default: "candidate")
+    - `auth_provider` (string): Auth provider (default: "email")
+    - `provider_id` (string): Provider ID
     - `bio` (string): User biography
     - `phone` (string): Phone number
     - `city` (string): City
     - `country` (string): Country
     - `years_of_experience` (integer): Years of experience
     - `domain` (string): Professional domain
+    - `linkedin_url` (string): LinkedIn URL
+    - `github_url` (string): GitHub URL
+    - `portfolio_url` (string): Portfolio URL
+    - `resume_url` (string): Resume URL
+    - `skills` (array): List of skills
+    - `preferences` (object): User preferences
     
     Returns the created user details with generated ID
     """
+    print(f"DEBUG: Received user_data: {user_data}")
+    print(f"DEBUG: user_data type: {type(user_data)}")
+    print(f"DEBUG: user_data dict: {user_data.dict() if hasattr(user_data, 'dict') else 'N/A'}")
+    
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -518,6 +533,11 @@ async def create_user(user_data: UserCreate = Body(...)):
         
     except Exception as e:
         conn.rollback()
+        cursor.close()
+        conn.close()
+        print(f"❌ Database Error: {e}")
+        print(f"❌ Error Type: {type(e)}")
+        print(f"❌ Error Args: {e.args}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to create user: {str(e)}"
