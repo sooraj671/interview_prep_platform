@@ -79,10 +79,11 @@ class AnalyticsDataPoint(BaseModel):
     metric_type: Mapped[str] = mapped_column(String(100), nullable=False)
     metric_name: Mapped[str] = mapped_column(String(255), nullable=False)
     value: Mapped[float] = mapped_column(DECIMAL(10, 4), nullable=False)
-    metric_metadata: Mapped[Dict[str, Any]] = mapped_column(
+    metadata_json: Mapped[Dict[str, Any]] = mapped_column(
         JSONB, 
         default=dict, 
-        server_default=text("'{}'::jsonb")
+        server_default=text("'{}'::jsonb"),
+        name='metadata'  # Map to the actual database column name
     )
     timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
